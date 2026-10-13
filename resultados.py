@@ -1,4 +1,5 @@
 from eficiencias import eficiencias, estado_para_regiao
+import math
 import os
 from dotenv import load_dotenv
 import requests
@@ -78,6 +79,27 @@ modelos_baterias = {
     "Chumbo Moura - 2640Wh": 2640
 }
 
+# Profundidade de descarga (DoD) admitida e eficiência de carga/descarga de cada
+# modelo. A energia utilizável de uma bateria é capacidade × DoD × eficiência
+# (Khatib; Ibrahim; Mohamed, 2016).
+#   - Renac Turbo L1 e H1: 90% de DoD informado no datasheet do fabricante.
+#   - Auxsol ABL-T (5,3 kWh): ~85% (4,5 kWh utilizáveis no datasheet do ABL-T05H-H02).
+#   - Chumbo-ácido Moura: 50%, valor usual de projeto para preservar a vida útil.
+#   - Eficiência: 95% para lítio (LiFePO4) e 85% para chumbo-ácido (valores típicos).
+parametros_baterias = {
+    "Lítio Turbo H1 - 3740Wh": {"dod": 0.90, "eficiencia": 0.95},
+    "Lítio Turbo H1 - 9500Wh": {"dod": 0.90, "eficiencia": 0.95},
+    "Lítio ABL-T-H1 - 5300Wh": {"dod": 0.85, "eficiencia": 0.95},
+    "Lítio LV Turbo L1 - 5300Wh": {"dod": 0.90, "eficiencia": 0.95},
+    "Chumbo Moura - 2640Wh": {"dod": 0.50, "eficiencia": 0.85},
+}
+
+
+def energia_util_bateria(modelo):
+    """Energia que uma bateria do modelo pode entregar por ciclo, em Wh."""
+    p = parametros_baterias[modelo]
+    return modelos_baterias[modelo] * p["dod"] * p["eficiencia"]
+
 # Custos fictícios e arredondados: servem apenas como "pesos" para a escolha da
 # configuração de menor custo (ver TCC, Seção 3.4.2). Não são preços de mercado.
 custo_item = {
@@ -103,12 +125,12 @@ modelos_paineis = {
     "610W": 610
 }
 
-def round033(num):
-    parte_decimal = num - int(num)
-    if parte_decimal > 0.33333:
-        return int(num) + 1
-    else:
-        return int(num)
+def teto(num):
+    """Arredonda para o inteiro imediatamente superior (função teto).
+
+    A tolerância evita que erros de ponto flutuante (ex.: 4,0000000001)
+    acrescentem um equipamento a mais."""
+    return math.ceil(num - 1e-9)
 
 def obter_eficiencia(orientacao, inclinacao, estado):
 
@@ -327,7 +349,7 @@ def resultados_por_inversor(hsp, tipo_sistema, tipo_rede, eficiencia, autonomia,
     potencia_painel = modelos_paineis[modelo_painel]
     qtd_paineis_offgrid = consumo / (potencia_painel * hsp_minimo * eficiencia)
     #print(consumo, potencia_painel, hsp_minimo, eficiencia)
-    qtd_paineis_offgrid = round033(qtd_paineis_offgrid)
+    qtd_paineis_offgrid = teto(qtd_paineis_offgrid)
 
     # Determina se o inversor suporta o equipamento de maior potência inserido
     if inversor.nome == "Renac Offgrid 5kW":
@@ -375,7 +397,7 @@ def resultados_por_inversor(hsp, tipo_sistema, tipo_rede, eficiencia, autonomia,
         else:
             # Quantidade de painéis ongrid
             qtd_paineis_ongrid = consumo_medio / (potencia_painel * hsp_medio * eficiencia * diasnomes_medio)
-            qtd_paineis_ongrid = int(qtd_paineis_ongrid) + 1
+            qtd_paineis_ongrid = teto(qtd_paineis_ongrid)
 
 
             if modo_calculo == "Somar consumo + cargas":
@@ -398,11 +420,7 @@ def resultados_por_inversor(hsp, tipo_sistema, tipo_rede, eficiencia, autonomia,
     inversores_por_baterias = {}
     baterias_por_modelo = {}
     for modelo in inversor.baterias:
-        wh_bateria = modelos_baterias[modelo]
-        qtd_baterias = consumo / wh_bateria
-        qtd_baterias = round033(qtd_baterias)
-        if qtd_baterias == 0:
-            qtd_baterias = 1
+        qtd_baterias = max(1, teto(consumo / energia_util_bateria(modelo)))
         if modelo == "Chumbo Moura - 2640Wh":
             qtd_baterias = ((qtd_baterias + 3) // 4) * 4
         qtd_inversores_bateria = (qtd_baterias + inversor.baterias[modelo] - 1) // inversor.baterias[modelo]
