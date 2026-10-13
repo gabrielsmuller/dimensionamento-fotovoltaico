@@ -356,7 +356,7 @@ class DimensionamentoApp(tk.Tk):
             options = [
                 #"Monofásico 127V (Fase + Neutro/Terra)",
                 "Monofásico 220V (Fase + Neutro + Terra)",
-                #"Bifásico 220V (Fase + Fase + Neutro/Terra)",
+                "Bifásico 220V (Fase + Fase + Neutro/Terra)",
                 #"Trifásico 220V (Fase + Fase + Fase + Neutro + Terra)",
                 "Trifásico 380V (Fase + Fase + Fase + Neutro + Terra)"
             ]
