@@ -526,8 +526,9 @@ class DimensionamentoApp(tk.Tk):
                     consumo = float(item_values[4])
 
                     autonomia_max = max(autonomia_max, autonomia)
-                    consumo_max = max(consumo_max, consumo) / float(item_values[1])
-                    potencia_max = max(potencia_max, potencia) / float(item_values[1])
+                    # Maior equipamento individual: valores por unidade
+                    consumo_max = max(consumo_max, consumo / float(item_values[1]))
+                    potencia_max = max(potencia_max, potencia / float(item_values[1]))
                     potencia_total += potencia
                     consumo_total += consumo
 
@@ -995,8 +996,9 @@ class DimensionamentoApp(tk.Tk):
 
                 # Atualizar os valores máximos e totais
                 autonomia_max = max(autonomia_max, autonomia)
-                consumo_max = max(consumo_max, consumo) / float(item_values[1])
-                potencia_max = max(potencia_max, potencia) / float(item_values[1])
+                # Maior equipamento individual: valores por unidade
+                consumo_max = max(consumo_max, consumo / float(item_values[1]))
+                potencia_max = max(potencia_max, potencia / float(item_values[1]))
                 potencia_total += potencia
                 consumo_total += consumo
             except ValueError:
