@@ -148,11 +148,13 @@ def obter_eficiencia(orientacao, inclinacao, estado):
 
 
 # Perdas estáticas agrupadas no fator global de segurança (TCC, Seção 3.5.3.2),
-# com base nas recomendações do PVWatts (NREL)
+# com base nas recomendações do PVWatts (NREL) e nos padrões do PVsyst
 PERDAS_ESTATICAS = {
     "ohmicas": 0.015,
     "inversor_e_mismatch": 0.05,
     "sujeira_e_opticas": 0.01,
+    "degradacao_inicial": 0.015,   # LID, valor padrão do PVWatts
+    "angulo_de_incidencia": 0.025, # IAM, perda anual típica com o modelo ASHRAE (b0 = 0,05) do PVsyst
 }
 
 
