@@ -1,41 +1,54 @@
-# PV Sizing Optimizer
+# PV Optimizer
 
-An automated algorithm designed to simplify the sizing process for **Off-Grid** and **Hybrid** photovoltaic power plants. This tool aims to bridge the gap between complex engineering simulations and fast-paced commercial needs.
+Algoritmo para o dimensionamento automático de sistemas fotovoltaicos **autônomos (*off-grid*)** e **híbridos**, com interface gráfica, voltado à elaboração rápida de propostas técnicas com equipamentos eletricamente compatíveis.
 
-## Overview
+## Visão geral
 
-Sizing autonomous solar systems is traditionally a complex task requiring deep technical expertise to ensure compatibility between modules, inverters, and batteries. This project provides an automated solution that:
-* **Eliminates technical complexity** for sales teams.
-* **Speeds up the design cycle** from hours to seconds.
-* **Optimizes costs** by identifying the most economical component combinations.
+Dimensionar sistemas fotovoltaicos com baterias exige obter os dados de irradiação do local, estimar o consumo, dimensionar o gerador e o banco de baterias e verificar a compatibilidade entre módulos, inversores e baterias. Este projeto automatiza essas etapas para:
 
-## Key Features
+* **Reduzir o tempo** de elaboração das propostas;
+* **Simplificar o processo** para profissionais com diferentes níveis de conhecimento técnico;
+* **Garantir a compatibilidade** elétrica entre os equipamentos sugeridos;
+* **Reduzir custos**, indicando a combinação de equipamentos de menor custo.
 
-* **Smart Component Selection:** Automatically suggests the best modules, inverters, and battery banks based on user needs.
-* **Technical Compatibility:** Ensures all suggested hardware is electrically and physically compatible.
-* **Multi-Topology Support:** Works for both standalone (Off-Grid) and grid-tied with backup (Hybrid) systems.
-* **Precision-Driven:** Results are designed to be comparable to industry-standard software like PVsyst and Solergo.
+## Funcionalidades
 
-## How It Works
+* **Irradiação automática:** obtém a irradiação global horizontal do Atlas Brasileiro de Energia Solar (INPE) a partir do endereço da instalação.
+* **Transposição para o plano dos módulos:** modelo de Perez (biblioteca pvlib), conforme a inclinação e a orientação informadas.
+* **Perdas do sistema:** temperatura, perdas ôhmicas, inversor, *mismatch*, sujeira, degradação inicial (LID) e ângulo de incidência (IAM).
+* **Dimensionamento:** quantidade de módulos, baterias (com profundidade de descarga e eficiência) e inversores.
+* **Compatibilidade:** limites de potência, de módulos por inversor e de baterias por banco de cada equipamento cadastrado.
+* **Fator de demanda (opcional):** método COBEI aplicado à potência das cargas.
+* **Topologias:** sistemas *off-grid* e híbridos.
 
-The algorithm follows a simple three-step logic:
+## Como funciona
 
-1. **Data Input:** User enters electricity bill details, load tables, and geographic location.
-2. **Processing:** The engine runs sophisticated calculation models to determine the optimal system configuration.
-3. **Output:** Generates a detailed proposal specifying the exact quantity and models of the required components.
+1. **Entrada:** localização, tabela de cargas, consumo mensal (sistemas híbridos) e dados da instalação.
+2. **Processamento:** cálculo da irradiação, das perdas e das quantidades de cada equipamento.
+3. **Saída:** proposta com os modelos e as quantidades de módulos, inversores e baterias, ordenada por custo.
 
-## Tech Stack
+## Tecnologias
 
-* **Language:** Python (Core Logic & Algorithm)
-* **Backend/Database:** Supabase (Project & Equipment Data)
-* **Documentation:** LaTeX / ABNT (Academic Thesis)
+* **Linguagem:** Python (interface em Tkinter)
+* **Cálculo solar:** pvlib, pandas, NumPy
+* **Banco de dados:** Supabase (autenticação e catálogo de cargas)
 
-## Academic Context
+## Executando
 
-This project is part of a Bachelor’s Degree in Computer Engineering at the **Federal University of Technology - Paraná (UTFPR)**.
+```bash
+pip install -r requirements.txt
+python main.py
+```
 
-**Author:** Gabriel Siqueira Müller
-**Advisor:** Prof. Marcos Roberto Bombacini
+As credenciais do Supabase devem ser informadas em um arquivo `.env`. Os casos de teste podem ser executados sem a interface gráfica:
 
----
-*Developed as a Final Graduation Project.*
+```bash
+python testes/casos.py
+```
+
+## Contexto acadêmico
+
+Projeto desenvolvido como Trabalho de Conclusão de Curso de Engenharia de Computação na **Universidade Tecnológica Federal do Paraná (UTFPR), campus Toledo**.
+
+**Autor:** Gabriel Siqueira Müller
+**Orientador:** Prof. Dr. Marcos Roberto Bombacini
