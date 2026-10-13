@@ -11,7 +11,7 @@ from tkintermapview import TkinterMapView
 from geopy.geocoders import Nominatim
 from exportar import exportar
 from atualizacoes import verificar_atualizacoes
-from resultados import resultados, calcular_eficiencia
+from resultados import resultados, preparar_irradiacao
 from acesso import LoginDialog, carregar_configuracoes, atualizar_manter_conectado, obter_organizacao
 from popups import CustomInfoPopup, EditItemWindow, YesNoPopup, AddManualItemWindow, AddItemWindow, ConsumoPopup, BigCustomInfoPopup
 #import sv_ttk
@@ -1097,9 +1097,8 @@ class DimensionamentoApp(tk.Tk):
 
         coordenadas_arredondadas = (round(coordenadas[0], 2), round(coordenadas[1], 2))
 
-        hsp = obter_hsp(coordenadas)
-
-        eficiencia = calcular_eficiencia(estado, orientacao, inclinacao, temperatura)
+        # irradiação no plano dos módulos (Perez) e eficiência global do sistema
+        hsp, eficiencia = preparar_irradiacao(coordenadas, obter_hsp(coordenadas), estado, orientacao, inclinacao, temperatura)
 
         # Calculando os dimensionamentos
         dimensionamento1, dimensionamento2, status = resultados(tipo_sistema, tipo_rede, eficiencia, autonomia, consumo_max, potencia_max, potencia, consumo, painel, hsp, tabela_consumo, modo_calculo, tabela)

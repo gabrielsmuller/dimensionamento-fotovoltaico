@@ -156,18 +156,38 @@ PERDAS_ESTATICAS = {
 }
 
 
-def calcular_eficiencia(estado, orientacao, inclinacao, temperatura):
+# True: transpõe a irradiação para o plano dos módulos pelo modelo de Perez (pvlib).
+# False: usa a tabela de fatores por região, orientação e inclinação (eficiencias.py),
+# método da versão anterior, mantido para comparação.
+USAR_PEREZ = True
+
+
+def calcular_eficiencia(estado, orientacao, inclinacao, temperatura, incluir_orientacao=True):
     temperatura_local = 50 #°C
 
-    eficiencia_inclinacao_orientacao = obter_eficiencia(orientacao, inclinacao, estado) # orientacao e inclinacao
     eficiencia_temperatura = 1 - ((temperatura_local-25)*abs(float(temperatura))/100) # temperatura
+    eficiencia = eficiencia_temperatura
 
-    eficiencia = float(eficiencia_inclinacao_orientacao) * eficiencia_temperatura
+    if incluir_orientacao:
+        eficiencia *= float(obter_eficiencia(orientacao, inclinacao, estado)) # orientacao e inclinacao
 
     for perda in PERDAS_ESTATICAS.values():
         eficiencia *= (1 - perda)
 
     return eficiencia
+
+
+def preparar_irradiacao(coordenadas, ghi_mensal, estado, orientacao, inclinacao, temperatura):
+    """Irradiação mensal usada no dimensionamento e eficiência global do sistema.
+
+    Com USAR_PEREZ, a irradiação já está no plano dos módulos e a eficiência não
+    inclui o fator de orientação/inclinação. Retorna (hsp_mensal_Wh, eficiencia)."""
+    if USAR_PEREZ:
+        from transposicao import irradiacao_plano_inclinado
+        latitude, longitude = coordenadas
+        hsp = irradiacao_plano_inclinado(latitude, longitude, ghi_mensal, inclinacao, orientacao)
+        return hsp, calcular_eficiencia(estado, orientacao, inclinacao, temperatura, incluir_orientacao=False)
+    return list(ghi_mensal), calcular_eficiencia(estado, orientacao, inclinacao, temperatura)
 
 
 # Fator de demanda pelo método COBEI (TCC, Seção 2.8). Desligado por padrão:

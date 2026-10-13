@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from obterhsp import obter_hsp  # noqa: E402
-from resultados import calcular_eficiencia, resultados  # noqa: E402
+from resultados import preparar_irradiacao, resultados  # noqa: E402
 
 LOCAIS = {
     "Toledo-PR": ((-24.7246, -53.7412), "Paraná", "25°"),
@@ -72,8 +72,7 @@ def totais_da_tabela(tabela):
 
 def rodar_caso(nome, sistema, local, tabela, consumo_mensal):
     coords, estado, inclinacao = LOCAIS[local]
-    hsp = obter_hsp(coords)
-    eficiencia = calcular_eficiencia(estado, ORIENTACAO, inclinacao, COEF_TEMPERATURA)
+    hsp, eficiencia = preparar_irradiacao(coords, obter_hsp(coords), estado, ORIENTACAO, inclinacao, COEF_TEMPERATURA)
     aut, cmax, pmax, ptot, ctot = totais_da_tabela(tabela)
     d1, d2, status = resultados(sistema, REDE, eficiencia, aut, cmax, pmax, ptot, ctot, PAINEL,
                                 hsp, consumo_mensal, MODO_HIBRIDO, tabela)
@@ -102,6 +101,9 @@ def _categorias_de_teste(tabela):
 if __name__ == "__main__":
     import contextlib
     import io
+    if "--tabela" in sys.argv:  # usa a tabela de orientação/inclinação em vez de Perez
+        import resultados as _r
+        _r.USAR_PEREZ = False
     if "--cobei" in sys.argv:  # roda com o fator de demanda COBEI ligado
         import resultados as _r
         _r.APLICAR_COBEI = True
