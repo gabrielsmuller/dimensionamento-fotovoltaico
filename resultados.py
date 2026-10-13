@@ -78,17 +78,19 @@ modelos_baterias = {
     "Chumbo Moura - 2640Wh": 2640
 }
 
+# Custos fictícios e arredondados: servem apenas como "pesos" para a escolha da
+# configuração de menor custo (ver TCC, Seção 3.4.2). Não são preços de mercado.
 custo_item = {
-    "Lítio Turbo H1 - 3740Wh": 6137,
-    "Lítio Turbo H1 - 9500Wh": 9849,
-    "Lítio ABL-T-H1 - 5300Wh": 8428,
+    "Lítio Turbo H1 - 3740Wh": 6100,
+    "Lítio Turbo H1 - 9500Wh": 9800,
+    "Lítio ABL-T-H1 - 5300Wh": 8400,
     #"Lítio ABL-H - 6650Wh": 15000, # Ficticio
-    "Lítio LV Turbo L1 - 5300Wh": 8852,
-    "Chumbo Moura - 2640Wh": 1591,
-    "Renac Offgrid 5kW": 2392,
-    "Renac Híbrido 6kW": 4827,
-    "Auxsol Híbrido 6kW": 2380,
-    "Renac Híbrido 10kW": 8419
+    "Lítio LV Turbo L1 - 5300Wh": 8900,
+    "Chumbo Moura - 2640Wh": 2600,
+    "Renac Offgrid 5kW": 2400,
+    "Renac Híbrido 6kW": 4800,
+    "Auxsol Híbrido 6kW": 4400,
+    "Renac Híbrido 10kW": 8400
     #"Autotrafo": 2000 # Ficticio
 }
 
