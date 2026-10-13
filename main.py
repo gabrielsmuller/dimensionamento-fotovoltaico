@@ -195,7 +195,6 @@ class DimensionamentoApp(tk.Tk):
         self.temperature_var = tk.StringVar(value="-0.3")
         self.selected_orientation = tk.StringVar()
         self.selected_orientation.set("Selecionar")
-        self.security_factor_var = tk.StringVar(value="5")
         self.modo_calculo = tk.StringVar()
         self.modo_calculo.set("Somar consumo + cargas")
 
@@ -397,17 +396,6 @@ class DimensionamentoApp(tk.Tk):
             inclination_menu = ttk.OptionMenu(inclination_frame, self.selected_inclination, self.selected_inclination.get(), *inclinations)
             inclination_menu.pack(pady=30)
 
-            security_factor_frame = ttk.LabelFrame(right_frame, text="Fator de Segurança (%)", padding=(20, 10))
-            security_factor_frame.grid(row=2, column=0, padx=(20, 10), pady=(10, 20), sticky="nsew")
-
-            security_factor_entry = ttk.Entry(security_factor_frame, textvariable=self.security_factor_var, width=10)
-            security_factor_entry.pack(side="left", pady=30, padx=(25,0))
-
-            doubt_security_factor = ttk.Button(security_factor_frame, text="?", command=self.doubt_security_factor, width=1)
-            doubt_security_factor.pack(side="left", pady=30, padx=(0,25))
-
-            self.security_factor_var.trace_add('write', self.validate_security_factor)
-
             pannel_frame = ttk.LabelFrame(right_frame, text="Potência dos Painéis", padding=(20, 10))
             pannel_frame.grid(row=0, column=1, padx=(10, 20), pady=(15, 10), sticky="nsew")
 
@@ -430,10 +418,6 @@ class DimensionamentoApp(tk.Tk):
         popup = CustomInfoPopup(self, "Coeficiente de Temperatura", f"O valor recomendado para o coeficiente de temperatura é de -0.3%/°C. Caso seja selecionado um valor diferente, consulte um engenheiro projetista para validar.")
         popup.grab_set()
 
-    def doubt_security_factor(self):
-        popup = CustomInfoPopup(self, "Fator de Segurança", f"O valor recomendado para o fator de segurança é de 5%. O fator de segurança aumenta a quantidade de potência de módulos necessária para suprir o consumo.")
-        popup.grab_set()
-
     def validate_temperature_coefficient(self, *args):
         try:
             temperature_coefficient = float(self.temperature_var.get())
@@ -441,14 +425,6 @@ class DimensionamentoApp(tk.Tk):
                 self.temperature_var.set("-0.99")
         except ValueError:
             self.temperature_var.set("-0.99")
-
-    def validate_security_factor(self, *args):
-        try:
-            security_factor = float(self.security_factor_var.get())
-            if security_factor < 0 or security_factor > 99:
-                self.security_factor_var.set("")
-        except ValueError:
-            self.security_factor_var.set("")
 
     def show_tab(self, index):
         add_widget = 0
@@ -562,10 +538,7 @@ class DimensionamentoApp(tk.Tk):
 
             tabela_consumo = self.obter_consumo_mensal()
 
-            security_factor = float(self.security_factor_var.get())
-            security_factor = security_factor / 100
-
-            status = self.resultados_finais(self.system_choice, self.network_type.get(), security_factor, autonomia_max, consumo_max, potencia_max, potencia_total, consumo_total, self.selected_pannel.get(), tabela, self.coordenadas_selecionadas, self.endereco_selecionado, self.selected_orientation.get(), self.selected_inclination.get(), tabela_consumo, self.temperature_var.get(), self.estado, self.modo_calculo.get())
+            status = self.resultados_finais(self.system_choice, self.network_type.get(), autonomia_max, consumo_max, potencia_max, potencia_total, consumo_total, self.selected_pannel.get(), tabela, self.coordenadas_selecionadas, self.endereco_selecionado, self.selected_orientation.get(), self.selected_inclination.get(), tabela_consumo, self.temperature_var.get(), self.estado, self.modo_calculo.get())
 
             if status != "ok":
                 CustomInfoPopup(self, "Erro", status)
@@ -1091,13 +1064,13 @@ class DimensionamentoApp(tk.Tk):
         else:
             print(f"Erro ao acessar dados: {response.text}")
 
-    def resultados_finais(self, tipo_sistema, tipo_rede, fator_seguranca, autonomia, consumo_max, potencia_max, potencia, consumo, painel, tabela, coordenadas, endereco, orientacao, inclinacao, tabela_consumo, temperatura, estado, modo_calculo):
+    def resultados_finais(self, tipo_sistema, tipo_rede, autonomia, consumo_max, potencia_max, potencia, consumo, painel, tabela, coordenadas, endereco, orientacao, inclinacao, tabela_consumo, temperatura, estado, modo_calculo):
 
         coordenadas_arredondadas = (round(coordenadas[0], 2), round(coordenadas[1], 2))
 
         hsp = obter_hsp(coordenadas)
 
-        eficiencia = calcular_eficiencia(float(fator_seguranca), estado, orientacao, inclinacao, temperatura)
+        eficiencia = calcular_eficiencia(estado, orientacao, inclinacao, temperatura)
 
         # Calculando os dimensionamentos
         dimensionamento1, dimensionamento2, status = resultados(tipo_sistema, tipo_rede, eficiencia, autonomia, consumo_max, potencia_max, potencia, consumo, painel, hsp, tabela_consumo, modo_calculo, tabela)
@@ -1160,7 +1133,7 @@ class DimensionamentoApp(tk.Tk):
         if dimensionamento1.tabela_geracao is not None:
             media_geracao = round(sum(dimensionamento1.tabela_geracao) / len(dimensionamento1.tabela_geracao), 1)
             #ttk.Label(pack2, text=f"Geração mensal estimada: {media_geracao}kWh").pack(anchor="w", padx=10, pady=5)
-        ttk.Button(pack2, text="Exportar", command=lambda: exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, consumo, painel, dimensionamento1, tabela, endereco, coordenadas_arredondadas, orientacao, inclinacao, temperatura, fator_seguranca, tabela_consumo, hsp, modo_calculo, self.organizacao), style="Accent.TButton").pack(
+        ttk.Button(pack2, text="Exportar", command=lambda: exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, consumo, painel, dimensionamento1, tabela, endereco, coordenadas_arredondadas, orientacao, inclinacao, temperatura, tabela_consumo, hsp, modo_calculo, self.organizacao), style="Accent.TButton").pack(
             anchor="center", side="bottom", padx=20, pady=20)
 
         if dimensionamento2 is not None:
@@ -1188,7 +1161,7 @@ class DimensionamentoApp(tk.Tk):
             #if dimensionamento2.tabela_geracao is not None:
                 #media_geracao = round(sum(dimensionamento2.tabela_geracao) / len(dimensionamento2.tabela_geracao), 1)
                 #ttk.Label(pack3, text=f"Geração mensal estimada: {media_geracao}kWh").pack(anchor="w", padx=10, pady=5)
-            ttk.Button(pack3, text="Exportar", command=lambda: exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, consumo, painel, dimensionamento2, tabela, endereco, coordenadas_arredondadas, orientacao, inclinacao, temperatura, fator_seguranca, tabela_consumo, hsp, modo_calculo, self.organizacao), style="Accent.TButton").pack(
+            ttk.Button(pack3, text="Exportar", command=lambda: exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, consumo, painel, dimensionamento2, tabela, endereco, coordenadas_arredondadas, orientacao, inclinacao, temperatura, tabela_consumo, hsp, modo_calculo, self.organizacao), style="Accent.TButton").pack(
                 anchor="center", side="bottom", padx=20, pady=20)
 
         return "ok"

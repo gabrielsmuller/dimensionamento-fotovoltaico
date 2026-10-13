@@ -55,7 +55,6 @@ CASOS = [
 PAINEL = "550W"
 ORIENTACAO = "Norte"
 COEF_TEMPERATURA = "-0.3"   # %/°C, valor padrão da interface
-FATOR_SEGURANCA = 0.05      # valor padrão da interface (5 %)
 REDE = "Monofásico 220V (Fase + Neutro + Terra)"
 MODO_HIBRIDO = "Somar consumo + cargas"
 
@@ -74,7 +73,7 @@ def totais_da_tabela(tabela):
 def rodar_caso(nome, sistema, local, tabela, consumo_mensal):
     coords, estado, inclinacao = LOCAIS[local]
     hsp = obter_hsp(coords)
-    eficiencia = calcular_eficiencia(FATOR_SEGURANCA, estado, ORIENTACAO, inclinacao, COEF_TEMPERATURA)
+    eficiencia = calcular_eficiencia(estado, ORIENTACAO, inclinacao, COEF_TEMPERATURA)
     aut, cmax, pmax, ptot, ctot = totais_da_tabela(tabela)
     d1, d2, status = resultados(sistema, REDE, eficiencia, aut, cmax, pmax, ptot, ctot, PAINEL,
                                 hsp, consumo_mensal, MODO_HIBRIDO, tabela)

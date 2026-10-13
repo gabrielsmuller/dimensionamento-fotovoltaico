@@ -18,7 +18,7 @@ else:
 icon_path = "dimicon.ico"
 icon_full_path = os.path.join(application_path, icon_path)
 
-def exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, consumo, painel, dimensionamento, tabela, endereco, coordenadas, orientacao, inclinacao, temperatura, seguranca, tabela_consumo, hsp, modo_calculo, organizacao):
+def exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, consumo, painel, dimensionamento, tabela, endereco, coordenadas, orientacao, inclinacao, temperatura, tabela_consumo, hsp, modo_calculo, organizacao):
 
     document = Document()
 
@@ -52,8 +52,7 @@ def exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, con
     tipo_rede_curto = re.sub(r"\s*\([^)]*\)", "", tipo_rede)
     document.add_paragraph(f"Tipo da rede: {tipo_rede_curto}")
     document.add_paragraph(f"Orientação / Inclinação dos módulos: {orientacao} / {inclinacao}")
-    seguranca = float(seguranca)*100
-    document.add_paragraph(f"Fator de segurança (%) & coeficiente de temperatura (%/°C): {seguranca} & {temperatura}")
+    document.add_paragraph(f"Coeficiente de temperatura (%/°C): {temperatura}")
     document.add_paragraph(f"Autonomia máxima (h): {round(autonomia, 2)}")
     document.add_paragraph(f"Soma das potências (W): {int(potencia)}")
     document.add_paragraph(f"Consumo total (Wh): {int(consumo)}")

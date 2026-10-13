@@ -125,20 +125,25 @@ def obter_eficiencia(orientacao, inclinacao, estado):
     return eficiencia
 
 
-def calcular_eficiencia(fator_seguranca, estado, orientacao, inclinacao, temperatura):
+# Perdas estáticas agrupadas no fator global de segurança (TCC, Seção 3.5.3.2),
+# com base nas recomendações do PVWatts (NREL)
+PERDAS_ESTATICAS = {
+    "ohmicas": 0.015,
+    "inversor_e_mismatch": 0.05,
+    "sujeira_e_opticas": 0.01,
+}
+
+
+def calcular_eficiencia(estado, orientacao, inclinacao, temperatura):
     temperatura_local = 50 #°C
 
-    #print(estado)
-
     eficiencia_inclinacao_orientacao = obter_eficiencia(orientacao, inclinacao, estado) # orientacao e inclinacao
-    eficiencia_fator_seguranca = (1-fator_seguranca) # fator de segurança
     eficiencia_temperatura = 1 - ((temperatura_local-25)*abs(float(temperatura))/100) # temperatura
 
-    eficiencia = float(eficiencia_inclinacao_orientacao) * eficiencia_fator_seguranca * eficiencia_temperatura
+    eficiencia = float(eficiencia_inclinacao_orientacao) * eficiencia_temperatura
 
-    eficiencia = eficiencia * (1-0.015) * (1-0.05) * (1-0.01) #???
-
-    #print(eficiencia, eficiencia_inclinacao_orientacao, eficiencia_fator_seguranca, eficiencia_temperatura)
+    for perda in PERDAS_ESTATICAS.values():
+        eficiencia *= (1 - perda)
 
     return eficiencia
 
