@@ -87,9 +87,25 @@ def rodar_caso(nome, sistema, local, tabela, consumo_mensal):
             "eficiencia": round(float(eficiencia), 4), "status": status, "opcoes": opcoes}
 
 
+# Categorias COBEI dos equipamentos de teste (no aplicativo elas vêm do Supabase)
+CATEGORIAS_TESTE = {
+    "Lâmpada LED": "IL", "Televisão": "TUG", "Notebook": "TUG", "Ventilador": "TUG",
+    "Geladeira": "TUE", "Freezer": "TUE", "Bomba d'água": "TUE",
+    "Micro-ondas": "MO", "Máquina de lavar": "TUE",
+}
+
+
+def _categorias_de_teste(tabela):
+    return [tuple(i[:5]) + (CATEGORIAS_TESTE.get(i[0], "outros"),) for i in tabela]
+
+
 if __name__ == "__main__":
     import contextlib
     import io
+    if "--cobei" in sys.argv:  # roda com o fator de demanda COBEI ligado
+        import resultados as _r
+        _r.APLICAR_COBEI = True
+        _r.obter_categoria = _categorias_de_teste
     saida = []
     for caso in CASOS:
         with contextlib.redirect_stdout(io.StringIO()):  # silencia os print() internos

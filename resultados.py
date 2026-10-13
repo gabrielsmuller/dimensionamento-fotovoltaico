@@ -170,14 +170,46 @@ def calcular_eficiencia(estado, orientacao, inclinacao, temperatura):
     return eficiencia
 
 
+# Fator de demanda pelo método COBEI (TCC, Seção 2.8). Desligado por padrão:
+# altere para True para testar o dimensionamento com o fator aplicado.
+APLICAR_COBEI = False
+# O fator de demanda representa a não simultaneidade das cargas, por isso reduz
+# a POTÊNCIA demandada (que dimensiona os inversores). O consumo diário já leva
+# em conta as horas de uso de cada equipamento; reduzi-lo também descontaria a
+# simultaneidade duas vezes. Mantido como opção apenas para testes.
+COBEI_AJUSTA_ENERGIA = False
+
+# Fatores de demanda por categoria (método COBEI). IL e TUG: um fator por faixa
+# de 1 kW de potência instalada (0-1 kW, 1-2 kW, ..., acima de 10 kW). Demais
+# categorias: um fator por número de aparelhos (1, 2, 3, 4 ou mais).
+FATORES_DEMANDA = {
+    "IL": [0.88, 0.75, 0.66, 0.59, 0.52, 0.45, 0.40, 0.35, 0.31, 0.27, 0.24],
+    "TUG": [0.88, 0.75, 0.66, 0.59, 0.52, 0.45, 0.40, 0.35, 0.31, 0.27, 0.24],
+    "TUE": [1.00],
+    "CH": [0.68, 0.56, 0.48, 0.43],
+    "TE": [0.72, 0.62, 0.57, 0.54],
+    "LL": [0.71, 0.64, 0.60, 0.57],
+    "AAP": [0.60, 0.48, 0.40, 0.37],
+    "AAA": [1.00, 1.00, 1.00, 0.80],
+    "MO": [0.56, 0.47, 0.39, 0.35],
+    "MSR": [1.00, 1.00, 1.00, 1.00],
+    "AC": [1.00, 1.00, 1.00, 1.00],
+    "HM": [0.60, 0.48, 0.40, 0.37],
+}
+
+
 def obter_categoria(tabela):
+    """Acrescenta a categoria COBEI de cada equipamento (consulta ao Supabase).
+
+    Equipamentos não encontrados, ou sem acesso ao banco, recebem 'outros'
+    (fator de demanda 1, ou seja, sem redução)."""
     load_dotenv()
     api_key = os.getenv("SUPABASE_API_KEY")
     auth_key = os.getenv("SUPABASE_AUTH_KEY")
     url = "https://ktdmbdjzmisdtjhdlvnl.supabase.co/rest/v1/Catalogo de Cargas"
     headers = {
-        "apikey": api_key,
-        "Authorization": auth_key,
+        "apikey": api_key or "",
+        "Authorization": auth_key or "",
         "Content-Type": "application/json",
         "Prefer": "return=representation"
     }
@@ -185,91 +217,58 @@ def obter_categoria(tabela):
     nova_tabela = []
 
     for item in tabela:
-        equipamento, quantidade, potencia, autonomia, consumo = item
-
-        # Prepara a URL para a consulta com filtragem por 'equipamento'
-        query_url = f"{url}?equipamento=eq.{equipamento}"
-
-        # Realiza a consulta HTTP GET ao Supabase
-        response = requests.get(query_url, headers=headers)
-
-        if response.status_code == 200:
-            data = response.json()
-            if data:
-                categoria = data[0].get('categoria', 'outros')
-            else:
-                categoria = 'outros'
-        else:
-            categoria = 'outros'
-
-        # Adiciona o item com a categoria na nova tabela
+        equipamento, quantidade, potencia, autonomia, consumo = item[:5]
+        categoria = 'outros'
+        if api_key:
+            try:
+                response = requests.get(f"{url}?equipamento=eq.{equipamento}", headers=headers, timeout=10)
+                if response.status_code == 200 and response.json():
+                    categoria = response.json()[0].get('categoria') or 'outros'
+            except requests.RequestException:
+                pass
         nova_tabela.append((equipamento, quantidade, potencia, autonomia, consumo, categoria))
 
     return nova_tabela
 
 
-def aplicar_fator_demanda(tabela):
-    # A tabela CO-BEI fornecida, associando cada tipo de equipamento ao fator de demanda por número de aparelhos
-    fatores_demanda = {
-        "IL": [0.88, 0.75, 0.66, 0.59, 0.52, 0.45, 0.40, 0.35, 0.31, 0.27, 0.24],  # Potência em kW
-        "TUG": [0.88, 0.75, 0.66, 0.59, 0.52, 0.45, 0.40, 0.35, 0.31, 0.27, 0.24],  # Potência em kW
-        "TUE": [1.00],
-        "CH": [0.68, 0.56, 0.48, 0.43],
-        "TE": [0.72, 0.62, 0.57, 0.54],
-        "LL": [0.71, 0.64, 0.60, 0.57],
-        "AAP": [0.60, 0.48, 0.40, 0.37],
-        "AAA": [1.00, 1.00, 1.00, 0.80],
-        "MO": [0.56, 0.47, 0.39, 0.35],
-        "MSR": [1.00, 1.00, 1.00, 1.00],
-        "AC": [1.00, 1.00, 1.00, 1.00],
-        "HM": [0.60, 0.48, 0.40, 0.37]
-    }
+def fator_demanda_por_categoria(tabela):
+    """Fator de demanda de cada categoria presente na tabela.
 
-    nova_tabela = []
+    IL/TUG: escolhido pela potência instalada total da categoria (faixas de 1 kW).
+    Demais: escolhido pelo número total de aparelhos da categoria."""
+    potencia_kw = {}
+    quantidade = {}
+    for equipamento, qtd, potencia, autonomia, consumo, categoria in tabela:
+        potencia_kw[categoria] = potencia_kw.get(categoria, 0) + int(qtd) * float(potencia) / 1000
+        quantidade[categoria] = quantidade.get(categoria, 0) + int(qtd)
 
-    for item in tabela:
-        equipamento, quantidade, potencia, autonomia, consumo, categoria = item
-        quantidade = int(quantidade)
-        potencia = float(potencia)
-        autonomia = float(autonomia)
-        consumo = float(consumo)
-
-        # Ajusta a potência e consumo usando o fator de demanda
-        if categoria in fatores_demanda:
-            if categoria == "IL" or categoria == "TUG":
-                # Encontrar o índice do fator de demanda baseado na potência
-                if potencia / 1000 <= 10:
-                    fd_index = int(potencia / 1000)  # Índice baseado na potência em kW
-                else:
-                    fd_index = 10  # Índice para potências acima de 10 kW
-                fator_demanda = fatores_demanda[categoria][fd_index] / 100  # Fator de demanda em %
-            else:
-                fd_index = min(quantidade, 4) - 1  # Índice no fator de demanda (0 a 3)
-                fator_demanda = fatores_demanda[categoria][fd_index]
+    fatores = {}
+    for categoria in potencia_kw:
+        lista = FATORES_DEMANDA.get(categoria)
+        if lista is None:
+            fatores[categoria] = 1.0
+        elif categoria in ("IL", "TUG"):
+            indice = max(0, teto(potencia_kw[categoria]) - 1)
+            fatores[categoria] = lista[min(indice, len(lista) - 1)]
         else:
-            fator_demanda = 1.0  # Sem ajuste
+            fatores[categoria] = lista[min(quantidade[categoria], len(lista)) - 1]
+    return fatores
 
-        potencia_ajustada = potencia * fator_demanda
-        consumo_ajustado = consumo * fator_demanda
 
-        nova_tabela.append((equipamento, quantidade, potencia_ajustada, autonomia, consumo_ajustado, categoria))
-
+def aplicar_fator_demanda(tabela):
+    fatores = fator_demanda_por_categoria(tabela)
+    nova_tabela = []
+    for equipamento, quantidade, potencia, autonomia, consumo, categoria in tabela:
+        fd = fatores[categoria]
+        consumo_ajustado = float(consumo) * fd if COBEI_AJUSTA_ENERGIA else float(consumo)
+        nova_tabela.append((equipamento, int(quantidade), float(potencia) * fd, float(autonomia),
+                            consumo_ajustado, categoria))
     return nova_tabela
 
 
 def metodo_cobei(tabela):
-    print("Tabela Original:")
-    print(tabela)
-
-    tabela = obter_categoria(tabela)
-
-    print("Tabela com Categoria:")
-    print(tabela)
-
-    tabela = aplicar_fator_demanda(tabela)
-
-    print("Tabela com Fator de Demanda Aplicado:")
-    print(tabela)
+    """Retorna a tabela de cargas com o fator de demanda COBEI aplicado."""
+    return aplicar_fator_demanda(obter_categoria(tabela))
 
 
 def resultados(tipo_sistema, tipo_rede, eficiencia, autonomia, consumo_max, potencia_max, potencia, consumo, modelo_painel, hsp, tabela_consumo, modo_calculo, tabela_cargas):
@@ -277,7 +276,12 @@ def resultados(tipo_sistema, tipo_rede, eficiencia, autonomia, consumo_max, pote
     status = "ok"
     custos_e_dimensionamentos = {}
 
-    #metodo_cobei(tabela_cargas) # SOMENTE PARA TESTE // A PRINCÍPIO NÃO SERÁ IMPLEMENTADO
+    if APLICAR_COBEI and tabela_cargas:
+        tabela_fd = metodo_cobei(tabela_cargas)
+        # potência demandada simultaneamente (dimensiona os inversores)
+        potencia = sum(int(i[1]) * float(i[2]) for i in tabela_fd)
+        if COBEI_AJUSTA_ENERGIA:
+            consumo = sum(float(i[4]) for i in tabela_fd)
 
     if tipo_sistema == "Offgrid":
         inversor_renacoff5k = Inversor.renac_off_5k()
