@@ -1,4 +1,4 @@
-# PV Optimizer
+# Dimensionamento Fotovoltaico
 
 Algoritmo para o dimensionamento automático de sistemas fotovoltaicos **autônomos (*off-grid*)** e **híbridos**, com interface gráfica, voltado à elaboração rápida de propostas técnicas com equipamentos eletricamente compatíveis.
 
