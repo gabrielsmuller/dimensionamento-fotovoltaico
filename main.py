@@ -370,16 +370,18 @@ class DimensionamentoApp(tk.Tk):
             for idx, option in enumerate(options):
                 ttk.Radiobutton(network_frame, text=option, variable=self.network_type, value=option).grid(row=idx, column=0, padx=10, pady=(40, 0), sticky='w')
 
+            ttk.Button(network_frame, text="?", width=1, command=lambda: self.ajuda("tipo_rede")).grid(row=0, column=1, padx=(10, 0), pady=(40, 0), sticky='n')
+
             right_frame = ttk.LabelFrame(upper_frame, text="Dados da Usina")
             right_frame.pack(side="left", padx=(10, 10), pady=(0, 10))
 
             temperature_frame = ttk.LabelFrame(right_frame, text="Coef. de Temperatura (%/°C)", padding=(20, 10))
-            temperature_frame.grid(row=2, column=1, padx=(10, 20), pady=(10, 20), sticky="nsew")
+            temperature_frame.grid(row=2, column=0, columnspan=2, padx=(20, 20), pady=(10, 20), sticky="nsew")
 
             temperature_entry = ttk.Entry(temperature_frame, textvariable=self.temperature_var, width=10)
             temperature_entry.pack(side="left", pady=30, padx=(25, 0))
 
-            doubt_temperature = ttk.Button(temperature_frame, text="?", command=self.doubt_temperature, width=1)
+            doubt_temperature = ttk.Button(temperature_frame, text="?", command=lambda: self.ajuda("coef_temperatura"), width=1)
             doubt_temperature.pack(side="left", pady=30,padx=(0, 10))
 
             self.temperature_var.trace_add('write', self.validate_temperature_coefficient)
@@ -388,19 +390,22 @@ class DimensionamentoApp(tk.Tk):
             orientation_frame.grid(row=1, column=0, padx=(20, 10), pady=10, sticky="nsew")
 
             orientation_menu = ttk.OptionMenu(orientation_frame, self.selected_orientation, self.selected_orientation.get(), *orientations)
-            orientation_menu.pack(pady=30)
+            orientation_menu.pack(side="left", pady=30, padx=(25, 0))
+            ttk.Button(orientation_frame, text="?", width=1, command=lambda: self.ajuda("orientacao")).pack(side="left", pady=30, padx=(5, 10))
 
             inclination_frame = ttk.LabelFrame(right_frame, text="Inclinação dos Painéis", padding=(20, 10))
             inclination_frame.grid(row=1, column=1, padx=(10, 20), pady=10, sticky="nsew")
 
             inclination_menu = ttk.OptionMenu(inclination_frame, self.selected_inclination, self.selected_inclination.get(), *inclinations)
-            inclination_menu.pack(pady=30)
+            inclination_menu.pack(side="left", pady=30, padx=(25, 0))
+            ttk.Button(inclination_frame, text="?", width=1, command=lambda: self.ajuda("inclinacao")).pack(side="left", pady=30, padx=(5, 10))
 
             pannel_frame = ttk.LabelFrame(right_frame, text="Potência dos Painéis", padding=(20, 10))
             pannel_frame.grid(row=0, column=1, padx=(10, 20), pady=(15, 10), sticky="nsew")
 
             pannel_menu = ttk.OptionMenu(pannel_frame, self.selected_pannel, self.selected_pannel.get(), *pannels)
-            pannel_menu.pack(pady=30)
+            pannel_menu.pack(side="left", pady=30, padx=(25, 0))
+            ttk.Button(pannel_frame, text="?", width=1, command=lambda: self.ajuda("potencia_painel")).pack(side="left", pady=30, padx=(5, 10))
 
             system_frame = ttk.LabelFrame(right_frame, text="Tipo do Sistema", padding=(20, 10))
             system_frame.grid(row=0, column=0, padx=(20, 10), pady=(15, 10), sticky="nsew")
@@ -414,8 +419,32 @@ class DimensionamentoApp(tk.Tk):
             next_button = ttk.Button(button_frame, style="Accent.TButton", text="Próximo", command=lambda: self.show_tab(2))
             next_button.pack(padx=40, pady=60)
 
-    def doubt_temperature(self):
-        popup = CustomInfoPopup(self, "Coeficiente de Temperatura", f"O valor recomendado para o coeficiente de temperatura é de -0.3%/°C. Caso seja selecionado um valor diferente, consulte um engenheiro projetista para validar.")
+    TEXTOS_AJUDA = {
+        "tipo_rede": ("Tipo de Rede",
+                      "Tipo de ligação da unidade consumidora, informado na conta de energia. "
+                      "Os inversores cadastrados operam em 220 V e atendem redes monofásicas 220 V, "
+                      "bifásicas 220 V e trifásicas 380 V (220 V entre fase e neutro)."),
+        "potencia_painel": ("Potência dos Painéis",
+                            "Potência nominal (W) do módulo fotovoltaico que será utilizado, conforme o "
+                            "datasheet ou o estoque disponível. Ela define quantos módulos podem ser "
+                            "ligados em série em cada inversor."),
+        "orientacao": ("Orientação dos Painéis",
+                       "Direção para a qual os módulos estarão voltados. No Brasil (hemisfério Sul), "
+                       "a orientação Norte é a que gera mais energia ao longo do ano; orientações "
+                       "Leste e Oeste geram menos, e Sul é a menos favorável."),
+        "inclinacao": ("Inclinação dos Painéis",
+                       "Ângulo entre os módulos e o plano horizontal. Normalmente segue a inclinação "
+                       "do telhado. Em estruturas de solo, um valor próximo da latitude do local "
+                       "favorece a geração ao longo do ano."),
+        "coef_temperatura": ("Coeficiente de Temperatura",
+                             "Coeficiente de temperatura de potência do módulo, informado no datasheet "
+                             "(em %/°C). O valor recomendado é -0.3%/°C. Caso seja utilizado um valor "
+                             "diferente, consulte um engenheiro projetista para validar."),
+    }
+
+    def ajuda(self, chave):
+        titulo, texto = self.TEXTOS_AJUDA[chave]
+        popup = CustomInfoPopup(self, titulo, texto)
         popup.grab_set()
 
     def validate_temperature_coefficient(self, *args):
