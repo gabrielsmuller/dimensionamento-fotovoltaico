@@ -376,54 +376,40 @@ class DimensionamentoApp(tk.Tk):
             right_frame = ttk.LabelFrame(upper_frame, text="Dados da Usina")
             right_frame.pack(side="left", padx=(10, 10), pady=(0, 10))
 
-            temperature_frame = ttk.LabelFrame(right_frame, text="Coef. de Temperatura (%/°C)", padding=(20, 10))
-            temperature_frame.grid(row=2, column=1, padx=(10, 20), pady=(10, 20), sticky="nsew")
+            def caixa(texto, linha, coluna):
+                """Caixa da grade de dados da usina com uma linha centralizada para o campo e o botão de ajuda."""
+                frame = ttk.LabelFrame(right_frame, text=texto, padding=(10, 10))
+                padx = (20, 10) if coluna == 0 else (10, 20)
+                pady = (15, 10) if linha == 0 else ((10, 20) if linha == 2 else 10)
+                frame.grid(row=linha, column=coluna, padx=padx, pady=pady, sticky="nsew")
+                conteudo = ttk.Frame(frame)
+                conteudo.pack(expand=True, pady=30)
+                return conteudo
 
-            temperature_entry = ttk.Entry(temperature_frame, textvariable=self.temperature_var, width=10)
-            temperature_entry.pack(side="left", pady=30, padx=(25, 0))
+            system_box = caixa("Tipo do Sistema", 0, 0)
+            ttk.Label(system_box, text=str(self.system_choice)).pack()
 
-            doubt_temperature = ttk.Button(temperature_frame, text="?", command=lambda: self.ajuda("coef_temperatura"), width=1)
-            doubt_temperature.pack(side="left", pady=30,padx=(0, 10))
+            pannel_box = caixa("Potência dos Painéis", 0, 1)
+            ttk.OptionMenu(pannel_box, self.selected_pannel, self.selected_pannel.get(), *pannels).pack(side="left")
+            ttk.Button(pannel_box, text="?", width=1, command=lambda: self.ajuda("potencia_painel")).pack(side="left", padx=(5, 0))
 
-            self.temperature_var.trace_add('write', self.validate_temperature_coefficient)
+            orientation_box = caixa("Orientação dos Painéis", 1, 0)
+            ttk.OptionMenu(orientation_box, self.selected_orientation, self.selected_orientation.get(), *orientations).pack(side="left")
+            ttk.Button(orientation_box, text="?", width=1, command=lambda: self.ajuda("orientacao")).pack(side="left", padx=(5, 0))
 
-            security_factor_frame = ttk.LabelFrame(right_frame, text="Fator de Segurança (%)", padding=(20, 10))
-            security_factor_frame.grid(row=2, column=0, padx=(20, 10), pady=(10, 20), sticky="nsew")
+            inclination_box = caixa("Inclinação dos Painéis", 1, 1)
+            ttk.OptionMenu(inclination_box, self.selected_inclination, self.selected_inclination.get(), *inclinations).pack(side="left")
+            ttk.Button(inclination_box, text="?", width=1, command=lambda: self.ajuda("inclinacao")).pack(side="left", padx=(5, 0))
 
-            security_factor_entry = ttk.Entry(security_factor_frame, textvariable=self.security_factor_var, width=10)
-            security_factor_entry.pack(side="left", pady=30, padx=(25, 0))
-
-            doubt_security_factor = ttk.Button(security_factor_frame, text="?", command=lambda: self.ajuda("fator_seguranca"), width=1)
-            doubt_security_factor.pack(side="left", pady=30, padx=(0, 10))
-
+            security_box = caixa("Fator de Segurança (%)", 2, 0)
+            ttk.Entry(security_box, textvariable=self.security_factor_var, width=8).pack(side="left")
+            ttk.Button(security_box, text="?", width=1, command=lambda: self.ajuda("fator_seguranca")).pack(side="left", padx=(5, 0))
             self.security_factor_var.trace_add('write', self.validate_security_factor)
 
-            orientation_frame = ttk.LabelFrame(right_frame, text="Orientação dos Painéis", padding=(20, 10))
-            orientation_frame.grid(row=1, column=0, padx=(20, 10), pady=10, sticky="nsew")
-
-            orientation_menu = ttk.OptionMenu(orientation_frame, self.selected_orientation, self.selected_orientation.get(), *orientations)
-            orientation_menu.pack(side="left", pady=30, padx=(25, 0))
-            ttk.Button(orientation_frame, text="?", width=1, command=lambda: self.ajuda("orientacao")).pack(side="left", pady=30, padx=(5, 10))
-
-            inclination_frame = ttk.LabelFrame(right_frame, text="Inclinação dos Painéis", padding=(20, 10))
-            inclination_frame.grid(row=1, column=1, padx=(10, 20), pady=10, sticky="nsew")
-
-            inclination_menu = ttk.OptionMenu(inclination_frame, self.selected_inclination, self.selected_inclination.get(), *inclinations)
-            inclination_menu.pack(side="left", pady=30, padx=(25, 0))
-            ttk.Button(inclination_frame, text="?", width=1, command=lambda: self.ajuda("inclinacao")).pack(side="left", pady=30, padx=(5, 10))
-
-            pannel_frame = ttk.LabelFrame(right_frame, text="Potência dos Painéis", padding=(20, 10))
-            pannel_frame.grid(row=0, column=1, padx=(10, 20), pady=(15, 10), sticky="nsew")
-
-            pannel_menu = ttk.OptionMenu(pannel_frame, self.selected_pannel, self.selected_pannel.get(), *pannels)
-            pannel_menu.pack(side="left", pady=30, padx=(25, 0))
-            ttk.Button(pannel_frame, text="?", width=1, command=lambda: self.ajuda("potencia_painel")).pack(side="left", pady=30, padx=(5, 10))
-
-            system_frame = ttk.LabelFrame(right_frame, text="Tipo do Sistema", padding=(20, 10))
-            system_frame.grid(row=0, column=0, padx=(20, 10), pady=(15, 10), sticky="nsew")
-
-            system_label = ttk.Label(system_frame,text=str(self.system_choice))
-            system_label.pack(fill='x', side='top', expand=True, pady=30, padx=(70))
+            temperature_box = caixa("Coef. de Temperatura (%/°C)", 2, 1)
+            ttk.Entry(temperature_box, textvariable=self.temperature_var, width=8).pack(side="left")
+            ttk.Button(temperature_box, text="?", width=1, command=lambda: self.ajuda("coef_temperatura")).pack(side="left", padx=(5, 0))
+            self.temperature_var.trace_add('write', self.validate_temperature_coefficient)
 
             button_frame = ttk.Frame(main_frame, padding=(20, 10))
             button_frame.pack(padx=20, pady=(30, 30), side="bottom", fill="both", expand=True)
