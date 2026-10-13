@@ -20,6 +20,10 @@ else:
 icon_path = "dimicon.ico"
 icon_full_path = os.path.join(application_path, icon_path)
 
+# Credenciais do Supabase: arquivo .env na mesma pasta do executável (ou do código)
+_pasta_env = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(_pasta_env, ".env"))
+
 def salvar_organizacao(nome):
     global organizacao
     organizacao = nome
