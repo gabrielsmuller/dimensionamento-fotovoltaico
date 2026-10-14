@@ -611,7 +611,7 @@ class DimensionamentoApp(tk.Tk):
         popup.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
 
         # Label para mostrar a mensagem
-        label = ttk.Label(popup, text="Este aplicativo é de caráter informativo. A Vertys Solar Group não se responsabiliza pelas instalações elétricas. Cabe ao responsável técnico do projeto validar e aplicar as informações descritas de acordo com cada projeto, bem como avaliar a viabilidade de cada instalação.", wraplength=430)
+        label = ttk.Label(popup, text="Este aplicativo é de caráter informativo e não substitui o projeto elaborado por um profissional habilitado. Cabe ao responsável técnico do projeto validar e aplicar as informações descritas de acordo com cada projeto, bem como avaliar a viabilidade de cada instalação.", wraplength=430)
         label.pack(padx=20, pady=20)
 
         self.accept_terms_var = tk.IntVar()
@@ -747,7 +747,7 @@ class DimensionamentoApp(tk.Tk):
             endereco = search_entry.get()
             endereco += ', Brasil'
             url = f'https://nominatim.openstreetmap.org/search?q={endereco}&format=jsonv2&addressdetails=1&limit=1&email=yourATreal.email'
-            headers = {'User-Agent': 'Dimensionamentos Vertys/1.0 (ti@vertysgroup.com)'}
+            headers = {'User-Agent': 'DimensionamentoFotovoltaico/1.0 (https://github.com/gabrielsmuller/dimensionamento-fotovoltaico)'}
 
             try:
                 response = requests.get(url, headers=headers)

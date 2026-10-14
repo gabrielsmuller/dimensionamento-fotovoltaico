@@ -26,7 +26,7 @@ def exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, con
     section = document.sections[0]
     header = section.header
     header_paragraph = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
-    path_da_imagem = os.path.join(application_path, "energygroup.png")
+    path_da_imagem = os.path.join(application_path, "utflogo.png")
     run = header_paragraph.add_run()
     run.add_picture(path_da_imagem, width=Inches(2.0))
 
@@ -238,7 +238,7 @@ def exportar(self, tipo_sistema, tipo_rede, eficiencia, autonomia, potencia, con
                 "A quantidade de módulos deste sistema foi determinada pelo maior valor entre o consumo do cliente e a necessidade de carga das baterias. Isso resulta em uma quantidade menor de módulos, priorizando a maior demanda. No entanto, pode ser insuficiente para suprir completamente o consumo nos dias em que também é necessário recarregar as baterias.")
 
     paragraph2 = document.add_paragraph(
-        "Este documento é de caráter informativo. A Vertys Solar Group não se responsabiliza pelas instalações elétricas. Cabe ao responsável técnico do projeto validar e aplicar as informações descritas de acordo com cada projeto, bem como avaliar a viabilidade de cada instalação.")
+        "Este documento é de caráter informativo e foi gerado automaticamente pelo software de dimensionamento. Cabe ao responsável técnico do projeto validar e aplicar as informações descritas de acordo com cada projeto, bem como avaliar a viabilidade de cada instalação.")
 
     # Definindo o alinhamento do parágrafo para justificado
     paragraph.alignment = WD_PARAGRAPH_ALIGNMENT.JUSTIFY
