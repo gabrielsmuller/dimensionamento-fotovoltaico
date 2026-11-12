@@ -355,11 +355,9 @@ class DimensionamentoApp(tk.Tk):
             network_frame.pack(padx=10, pady=(3, 10), side="top", fill="both", expand=True)
 
             options = [
-                #"Monofásico 127V (Fase + Neutro/Terra)",
-                "Monofásico 220V (Fase + Neutro + Terra)",
-                "Bifásico 220V (Fase + Fase + Neutro/Terra)",
-                #"Trifásico 220V (Fase + Fase + Fase + Neutro + Terra)",
-                "Trifásico 380V (Fase + Fase + Fase + Neutro + Terra)"
+                "Monofásico 220 V (Fase + Neutro + Terra)",
+                "Bifásico 127/220 V (Fase + Fase + Neutro + Terra)",
+                "Trifásico 127/220 V ou 220/380 V\n(Fase + Fase + Fase + Neutro + Terra)"
             ]
 
             pannels = ["550W", "555W", "570W", "580W", "585W", "610W"]
@@ -420,8 +418,10 @@ class DimensionamentoApp(tk.Tk):
     TEXTOS_AJUDA = {
         "tipo_rede": ("Tipo de Rede",
                       "Tipo de ligação da unidade consumidora, informado na conta de energia. "
-                      "Os inversores cadastrados operam em 220 V e atendem redes monofásicas 220 V, "
-                      "bifásicas 220 V e trifásicas 380 V (220 V entre fase e neutro)."),
+                      "As distribuidoras adotam os sistemas 127/220 V ou 220/380 V, conforme a região. "
+                      "Os inversores cadastrados operam em 220 V: nas redes 127/220 V, são ligados entre "
+                      "duas fases (bifásico ou trifásico); nas redes 220/380 V, entre fase e neutro "
+                      "(monofásico ou trifásico). Redes monofásicas de 127 V não são atendidas."),
         "potencia_painel": ("Potência dos Painéis",
                             "Potência nominal (W) do módulo fotovoltaico que será utilizado, conforme o "
                             "datasheet ou o estoque disponível. Ela define quantos módulos podem ser "

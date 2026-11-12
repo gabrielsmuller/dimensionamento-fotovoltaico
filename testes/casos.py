@@ -55,7 +55,7 @@ CASOS = [
 PAINEL = "550W"
 ORIENTACAO = "Norte"
 COEF_TEMPERATURA = "-0.3"   # %/°C, valor padrão da interface
-REDE = "Monofásico 220V (Fase + Neutro + Terra)"
+REDE = "Monofásico 220 V (Fase + Neutro + Terra)"
 MODO_HIBRIDO = "Somar consumo + cargas"
 
 
